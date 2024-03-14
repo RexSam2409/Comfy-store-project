@@ -1,25 +1,18 @@
 import { NavLink } from "react-router-dom";
 import { BsCart3 } from "react-icons/bs";
 import Navlinks from "./Navlinks";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../Features/cart/user/user";
 
-const themes = {
-  winter: "winter",
-  dracula: "dracula",
-};
-const gettheme = localStorage.getItem("theme") || themes.winter;
 const Navbar = () => {
-  const [theme, setTheme] = useState(gettheme);
+  const dispatch = useDispatch();
+
   const handleTheme = () => {
-    const { winter, dracula } = themes;
-    const newtheme = theme === winter ? dracula : winter;
-    setTheme(newtheme);
+    dispatch(toggleTheme());
   };
 
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  const total = useSelector((state) => state.cart.numItemsInCart);
   return (
     <div className="navbar bg-base-200">
       <div className="navbar align-element">
@@ -90,7 +83,7 @@ const Navbar = () => {
             <div className="indicator">
               <BsCart3 className="h-6 w-6" />
               <span className="badge badge-sm badge-primary indicator-item">
-                9
+                {total}
               </span>
             </div>
           </NavLink>
