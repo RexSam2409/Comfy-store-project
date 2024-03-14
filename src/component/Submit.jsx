@@ -4,7 +4,6 @@ import { useNavigation } from "react-router-dom";
 
 const Submit = ({ text }) => {
   const navigation = useNavigation();
-  console.log(navigation.state);
   const isLoading = navigation.state === "submitting";
 
   return (

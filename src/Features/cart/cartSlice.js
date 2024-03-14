@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import { toast } from "react-toastify";
 
 const defaultState = {
@@ -9,25 +10,58 @@ const defaultState = {
   tax: 0,
   orderTotal: 0,
 };
-
+const getFromlocalStorage = () => {
+  return JSON.parse(localStorage.getItem("cart")) || defaultState;
+};
 const cartSlice = createSlice({
   name: "cart",
-  initialState: defaultState,
+  initialState: getFromlocalStorage(),
   reducers: {
-    clearcart: (state) => {
-      console.log(state);
+    clearcart: () => {
+      localStorage.setItem("cart", JSON.stringify(defaultState));
+
+      return defaultState;
     },
-    addItem: (state) => {
-      console.log(state);
+    addItem: (state, action) => {
+      const { product } = action.payload;
+
+      const item = state.cartItems.find((i) => i.cartID === product.cartID);
+      if (item) {
+        item.amount += product.amount;
+      } else {
+        state.cartItems.push(product);
+      }
+      state.numItemsInCart += product.amount;
+      state.cartTotal += product.price * product.amount;
+      cartSlice.caseReducers.calculateTotals(state);
+      toast.success("Items added to cart");
     },
-    removeItem: (state) => {
-      console.log(state);
+    removeItem: (state, action) => {
+      const Itemkey = action.payload;
+      const product = state.cartItems.find((i) => i.cartID === Itemkey);
+      state.cartItems = state.cartItems.filter((i) => i.cartID !== Itemkey);
+
+      state.numItemsInCart -= product.amount;
+      state.cartTotal -= product.price * product.amount;
+      cartSlice.caseReducers.calculateTotals(state);
+      toast.error("Item removed from cart");
     },
-    editItem: (state) => {
-      console.log(state);
+    editItem: (state, action) => {
+      const { cartID, amount } = action.payload;
+      const item = state.cartItems.find((i) => i.cartID === cartID);
+      state.numItemsInCart += amount - item.amount;
+      state.cartTotal += item.price * (amount - item.amount);
+      item.amount = amount;
+      cartSlice.caseReducers.calculateTotals(state);
+      toast.success("Cart updated");
+    },
+    calculateTotals: (state) => {
+      state.tax += 0.1 * state.cartTotal;
+      state.orderTotal = state.cartTotal + state.tax + state.shipping;
+      localStorage.setItem("cart", JSON.stringify(state));
     },
   },
 });
 
-export const { addItem, removeItem, editItem, clearCart } = cartSlice.actions;
+export const { addItem, removeItem, editItem, clearcart } = cartSlice.actions;
 export default cartSlice.reducer;

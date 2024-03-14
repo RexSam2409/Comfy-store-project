@@ -5,37 +5,46 @@ import { generateOption } from "../utilis/function";
 import { useDispatch } from "react-redux";
 import { addItem } from "../Features/cart/cartSlice";
 
-export const loader = async ({ params }) => {
-  const { data } = await customFetch.get(`/products/${params.id}`);
-  const resp = data.data;
-
-  return resp;
+const singleProductsquery = (id) => {
+  return {
+    queryKey: ["singleProducts", id],
+    queryFn: () => customFetch.get(`/products/${id}`),
+  };
 };
+
+export const loader =
+  (queryClient) =>
+  async ({ params }) => {
+    const { data } = await queryClient.ensureQueryData(
+      singleProductsquery(params.id)
+    );
+    const resp = data.data;
+    return resp;
+  };
 
 const SingleProduct = () => {
   const data = useLoaderData();
 
   const { title, price, image, company, description, colors } = data.attributes;
   const Inr = formatPrice(price);
-  const [productcolor, setProductcolor] = useState([0]);
+  const [productcolor, setProductcolor] = useState(colors[0]);
   const [amount, setAmount] = useState(1);
   const handleSelect = (e) => {
     setAmount(parseInt(e.target.value));
   };
-
   const cartProduct = {
-    cartID: data.id + colors,
+    cartID: data.id + productcolor,
     productID: data.id,
     image,
     title,
     price,
     company,
-    colors,
+    productcolor,
     amount,
   };
 
   const dispatch = useDispatch();
-  console.log(dispatch(addItem({ product: cartProduct })));
+
   return (
     <section>
       <div className="text-md breadcrumbs">
@@ -76,7 +85,7 @@ const SingleProduct = () => {
                   className={`h-6 mt-2 w-6 mr-2 badge ${
                     color === productcolor && "border-2 border-secondary"
                   }`}
-                  style={{ background: color }}
+                  style={{ backgroundColor: color }}
                   onClick={() => setProductcolor(color)}
                 ></button>
               );
@@ -98,9 +107,7 @@ const SingleProduct = () => {
           <div className="mt-10">
             <button
               className="btn btn-secondary btn-md"
-              onClick={() => {
-                console.log("hello");
-              }}
+              onClick={() => dispatch(addItem({ product: cartProduct }))}
             >
               Add to bag
             </button>
