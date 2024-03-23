@@ -7,8 +7,9 @@ import { useQueryClient } from "@tanstack/react-query";
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.userState.user);
   const queryClient = useQueryClient();
+  const user = useSelector((state) => state.userState.user);
+
   const handlelogout = () => {
     navigate("/");
     dispatch(clearcart());
