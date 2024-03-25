@@ -14,8 +14,8 @@ const gettheme = () => {
 };
 
 const initialState = {
-  user: getuser,
-  theme: gettheme,
+  user: getuser(),
+  theme: gettheme(),
 };
 const userSlice = createSlice({
   name: "user",
